@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PDF QA with Gemini</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 40px;
+          background-color: #f8f9fa;
+        }
+        h1 {
+          color: #343a40;
+        }
+        .container {
+          max-width: 600px;
+          margin: auto;
+        }
+        input[type="file"], input[type="text"], button {
+          width: 100%;
+          margin: 10px 0;
+          padding: 10px;
+          font-size: 16px;
+        }
+        .answer {
+          background-color: #fff;
+          padding: 15px;
+          border-radius: 5px;
+          border: 1px solid #dee2e6;
+          margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>PDF QA Chat</h1>
+
+    <form id="upload-form">
+        <label>Upload PDF:</label>
+        <input type="file" id="file" accept=".pdf" required />
+        <button type="submit">Upload PDF</button>
+    </form>
+
+    <form id="question-form">
+        <label>Ask a question:</label>
+        <input type="text" id="question" placeholder="Enter your question" required />
+        <button type="submit">Ask</button>
+    </form>
+
+    <div class="answer" id="answer-box" style="display: none;"></div>
+</div>
+
+<script>
+    document.getElementById("upload-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById("file");
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      const res = await fetch("/api/pdf/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        alert("PDF uploaded and indexed successfully!");
+      } else {
+        alert("Failed to upload PDF.");
+      }
+    });
+
+    document.getElementById("question-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const question = document.getElementById("question").value;
+
+      const res = await fetch("/api/pdf/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+
+      const answerBox = document.getElementById("answer-box");
+      if (res.ok) {
+        const answer = await res.text();
+        answerBox.textContent = answer;
+        answerBox.style.display = "block";
+      } else {
+        answerBox.textContent = "Failed to get answer.";
+        answerBox.style.display = "block";
+      }
+    });
+</script>
+
+</body>
+</html>
+
